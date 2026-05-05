@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.concurrency import run_in_threadpool
 
+from src.schemas.metrics import MetricsInput
 from src.services.metrics.ai_service import analyze_metrics
 from src.services.metrics.metrics_service import calculate_metrics
 
@@ -22,7 +23,7 @@ def home(request: Request):
 
 
 @app.post("/metrics")
-async def metrics(payload: dict):
+async def metrics(payload: MetricsInput):
     result = calculate_metrics(
         tp=payload.get("tp", 0),
         tn=payload.get("tn", 0),

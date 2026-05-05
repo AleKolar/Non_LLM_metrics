@@ -127,30 +127,58 @@ function closeModal() {
 }
 
 async function calculate() {
+    // 1. Проверяем, что все числовые поля корректны
+    const fields = ['tp', 'tn', 'fp', 'fn', 'rank'];
+    for (let f of fields) {
+        const raw = document.getElementById(f).value.trim();
+        if (raw === '' || !/^\d+$/.test(raw)) {
+            document.getElementById("analysis").innerText =
+                `❌ Поле ${f.toUpperCase()} должно быть целым неотрицательным числом`;
+            return;   // прерываем, не отправляем запрос
+        }
+    }
 
     const ranksInput = document.getElementById("ranks").value;
 
     const data = {
-        tp: parseInt(document.getElementById("tp").value) || 0,
-        tn: parseInt(document.getElementById("tn").value) || 0,
-        fp: parseInt(document.getElementById("fp").value) || 0,
-        fn: parseInt(document.getElementById("fn").value) || 0,
-        first_relevant_rank: parseInt(document.getElementById("rank").value) || 1,
+        tp: parseInt(document.getElementById("tp").value),
+        tn: parseInt(document.getElementById("tn").value),
+        fp: parseInt(document.getElementById("fp").value),
+        fn: parseInt(document.getElementById("fn").value),
+        first_relevant_rank: parseInt(document.getElementById("rank").value),
         ranks: ranksInput ? ranksInput.split(",").map(Number) : null
     };
+
+    // Очищаем старые сообщения об ошибках
+    document.getElementById("analysis").innerText = "";
+    document.getElementById("metrics").innerHTML = "";
 
     try {
         const response = await fetch("/metrics", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
         });
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            let errorMsg = "";
+            if (errorData.detail) {
+                if (Array.isArray(errorData.detail)) {
+                    errorMsg = errorData.join("\n");
+                } else {
+                    errorMsg = errorData.detail;
+                }
+            } else {
+                errorMsg = `Ошибка сервера: ${response.status}`;
+            }
+            document.getElementById("analysis").innerText = "❌ " + errorMsg;
+            return;
+        }
+
         const result = await response.json();
 
-        // 🔹 Метрики
+        // Обновляем метрики
         document.getElementById("metrics").innerHTML = `
             Accuracy: ${result.accuracy} <br>
             Precision: ${result.precision} <br>
@@ -160,11 +188,10 @@ async function calculate() {
             MRR: ${result.mrr}
         `;
 
-        // 🔹 AI анализ
-        document.getElementById("analysis").innerText =
-            result.analysis || "Нет анализа";
+        // AI анализ
+        document.getElementById("analysis").innerText = result.analysis || "Нет анализа";
 
-        // 🔹 Матрица
+        // Матрица ошибок
         document.getElementById("tp_cell").innerText = result.tp;
         document.getElementById("tn_cell").innerText = result.tn;
         document.getElementById("fp_cell").innerText = result.fp;
@@ -173,8 +200,7 @@ async function calculate() {
         closeModal();
 
     } catch (error) {
-        document.getElementById("analysis").innerText =
-            "Ошибка при запросе к серверу";
+        document.getElementById("analysis").innerText = "Ошибка сети или сервер недоступен";
         console.error(error);
     }
 }
