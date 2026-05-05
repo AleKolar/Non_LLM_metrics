@@ -1,0 +1,185 @@
+<!-- src/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Metrics Calculator</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+
+        h1, h2 {
+            margin-top: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        td, th {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        button {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 35%;
+            background: white;
+            padding: 20px;
+            border: 1px solid black;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        input {
+            width: 200px;
+            padding: 5px;
+        }
+
+        #analysis {
+            margin-top: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>📊 Metrics Calculator</h1>
+
+<button onclick="openModal()">Ввести данные</button>
+
+<!-- 🔹 МОДАЛКА -->
+<div id="modal" class="modal">
+    <h3>Введите значения</h3>
+
+    <h4>Classification</h4>
+    <input id="tp" placeholder="TP"><br><br>
+    <input id="tn" placeholder="TN"><br><br>
+    <input id="fp" placeholder="FP"><br><br>
+    <input id="fn" placeholder="FN"><br><br>
+
+    <h4>Ranking</h4>
+    <input id="rank" placeholder="Rank первого релевантного"><br><br>
+    <input id="ranks" placeholder="Ranks через запятую (1,2,3)"><br><br>
+
+    <button onclick="calculate()">Рассчитать</button>
+    <button onclick="closeModal()">Закрыть</button>
+</div>
+
+<!-- 🔹 РЕЗУЛЬТАТЫ -->
+<h2>📊 Результаты:</h2>
+<div id="metrics">-</div>
+
+<!-- 🔹 AI АНАЛИЗ -->
+<h2>🧠 AI-анализ:</h2>
+<div id="analysis">-</div>
+
+<!-- 🔹 CONFUSION MATRIX -->
+<h2>📉 Матрица ошибок:</h2>
+<table>
+    <tr>
+        <th></th>
+        <th>Predicted P</th>
+        <th>Predicted N</th>
+    </tr>
+    <tr>
+        <th>Actual P</th>
+        <td id="tp_cell">-</td>
+        <td id="fn_cell">-</td>
+    </tr>
+    <tr>
+        <th>Actual N</th>
+        <td id="fp_cell">-</td>
+        <td id="tn_cell">-</td>
+    </tr>
+</table>
+
+<!-- 🔹 JS -->
+<script>
+
+function openModal() {
+    document.getElementById("modal").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("modal").classList.remove("active");
+}
+
+async function calculate() {
+
+    const ranksInput = document.getElementById("ranks").value;
+
+    const data = {
+        tp: parseInt(document.getElementById("tp").value) || 0,
+        tn: parseInt(document.getElementById("tn").value) || 0,
+        fp: parseInt(document.getElementById("fp").value) || 0,
+        fn: parseInt(document.getElementById("fn").value) || 0,
+        first_relevant_rank: parseInt(document.getElementById("rank").value) || 1,
+        ranks: ranksInput ? ranksInput.split(",").map(Number) : null
+    };
+
+    try {
+        const response = await fetch("/metrics", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        // 🔹 Метрики
+        document.getElementById("metrics").innerHTML = `
+            Accuracy: ${result.accuracy} <br>
+            Precision: ${result.precision} <br>
+            Recall: ${result.recall} <br>
+            F1-score: ${result.f1} <br>
+            RR: ${result.rr} <br>
+            MRR: ${result.mrr}
+        `;
+
+        // 🔹 AI анализ
+        document.getElementById("analysis").innerText =
+            result.analysis || "Нет анализа";
+
+        // 🔹 Матрица
+        document.getElementById("tp_cell").innerText = result.tp;
+        document.getElementById("tn_cell").innerText = result.tn;
+        document.getElementById("fp_cell").innerText = result.fp;
+        document.getElementById("fn_cell").innerText = result.fn;
+
+        closeModal();
+
+    } catch (error) {
+        document.getElementById("analysis").innerText =
+            "Ошибка при запросе к серверу";
+        console.error(error);
+    }
+}
+
+</script>
+
+</body>
+</html>
