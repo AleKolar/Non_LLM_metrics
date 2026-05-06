@@ -95,6 +95,9 @@
 <h2>🧠 AI-анализ:</h2>
 <div id="analysis">-</div>
 
+<!-- 🔹 КНОПКА СКАЧАТЬ -->
+<button id="downloadTxtBtn" style="display: none;" onclick="downloadResult('/download')">📄 Скачать </button>
+
 <!-- 🔹 CONFUSION MATRIX -->
 <h2>📉 Матрица ошибок:</h2>
 <table>
@@ -126,7 +129,15 @@ function closeModal() {
     document.getElementById("modal").classList.remove("active");
 }
 
+function downloadResult(url) {
+    // Переход на эндпоинт скачивания последнего результата
+    window.location.href = url;
+}
+
 async function calculate() {
+    // Скрываем кнопку скачивания перед новым расчётом
+    document.getElementById("downloadTxtBtn").style.display = "none";
+
     // 1. Проверяем, что все числовые поля корректны
     const fields = ['tp', 'tn', 'fp', 'fn', 'rank'];
     for (let f of fields) {
@@ -198,6 +209,8 @@ async function calculate() {
         document.getElementById("fn_cell").innerText = result.fn;
 
         closeModal();
+        // Показываем кнопку скачивания после успешного расчёта
+        document.getElementById("downloadTxtBtn").style.display = "inline-block";
 
     } catch (error) {
         document.getElementById("analysis").innerText = "Ошибка сети или сервер недоступен";
