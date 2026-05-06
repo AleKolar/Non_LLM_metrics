@@ -114,7 +114,8 @@ async def metrics(payload: MetricsInput, request: Request):
 # ===== СКАЧАТЬ ФАЙЛ =====
 
 @download_router.get("/download")
-async def download_txt():
+async def download():
+    """ Для загрузки результатов проведенного анализа (последнего)"""
     return FileResponse(
         "last_result.txt",
         media_type="text/plain",
@@ -157,3 +158,4 @@ app.include_router(download_router)
 app.include_router(health_router)
 
 # uvicorn main:app --reload
+# uvicorn main:app --reload --port 8001
