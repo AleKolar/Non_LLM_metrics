@@ -25,12 +25,12 @@ def home(request: Request):
 @app.post("/metrics")
 async def metrics(payload: MetricsInput):
     result = calculate_metrics(
-        tp=payload.get("tp", 0),
-        tn=payload.get("tn", 0),
-        fp=payload.get("fp", 0),
-        fn=payload.get("fn", 0),
-        first_relevant_rank=payload.get("first_relevant_rank", 1),
-        ranks=payload.get("ranks")
+        tp=payload.tp,
+        tn=payload.tn,
+        fp=payload.fp,
+        fn=payload.fn,
+        first_relevant_rank=payload.first_relevant_rank,
+        ranks=payload.ranks
     )
 
     #result["analysis"] = analyze_metrics(result)
