@@ -1,5 +1,5 @@
 # Non_LLM_metrics
-Automatic calculation of non LLM metrics of the AI model
+### Automatic calculation of non LLM metrics of the AI model
 
 Сервис для расчёта non-LLM метрик (Accuracy, Precision, Recall, F1, RR, MRR) и AI-анализа качества поисковой выдачи.
 
