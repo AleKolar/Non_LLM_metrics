@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.concurrency import run_in_threadpool
 from starlette.responses import JSONResponse, FileResponse, Response
+from starlette.staticfiles import StaticFiles
 
 from src.config.database import init_db, save_metrics
 from src.schemas.metrics import MetricsInput
@@ -58,6 +59,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 download_router = APIRouter()
 health_router = APIRouter()
@@ -157,5 +160,4 @@ async def health_ai():
 app.include_router(download_router)
 app.include_router(health_router)
 
-# uvicorn main:app --reload
-# uvicorn main:app --reload --port 8001
+# uvicorn main:app --port 8000

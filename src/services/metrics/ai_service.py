@@ -39,7 +39,7 @@ def analyze_metrics(metrics: dict) -> str:
             "Content-Type": "application/json"
         },
         json={
-            "model": "openrouter/free",
+            "model": "openrouter/free", # можно пробовать с конкретными: "model": "deepseek/deepseek-chat" ; "model": "meta-llama/llama-3.1-8b-instruct" ; "model": "openai/gpt-4o-mini"
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.2,
             "max_tokens": 250
@@ -51,4 +51,3 @@ def analyze_metrics(metrics: dict) -> str:
     else:
         return f"Ошибка OpenRouter: {response.status_code} {response.text}"
 
-# uvicorn main:app --reload
